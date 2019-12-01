@@ -2,12 +2,14 @@
 
 #include <cstdlib>
 #include "OpenGP/GL/Application.h"
+#include "OpenGP/GL/Eigen.h"
+
 
 using namespace OpenGP;
 
 inline float lerp(float x, float y, float t) {
     /// TODO: Implement linear interpolation between x and y
-    return 0.0f;
+    return x+t*(y-x);
 }
 
 inline float fade(float t) {
@@ -45,10 +47,19 @@ R32FTexture* fBm2DTexture() {
     ///--- Precompute exponent array
     float *exponent_array = new float[octaves];
     float f = 1.0f;
-    for (int i = 0; i < octaves; ++i) {
-        /// TODO: Implement this step according to Musgraves paper on fBM
-
-    }
+	float value = 0.0f;
+	for (int w = 0; w < width; ++w) {
+		for (int h = 0; h < height; ++h) {
+			int H = h;
+			int W = w;
+			for (int i = 0; i < octaves; ++i) {
+				/// TODO: Implement this step according to Musgraves paper on fBM
+				value += noise_data[H, W] * pow(lacunarity, -H * i);	
+				H*= (int)lacunarity;
+				W *= (int)lacunarity;
+			}
+		}
+	}
 
     for (int i = 0; i < width; ++ i) {
         for (int j = 0; j < height; ++ j) {
@@ -123,17 +134,17 @@ float* perlin2D(const int width, const int height, const int period) {
             Vec2 d(dx-1,    1 - dy); // bottomright
 
             ///TODO: Get scalars at corners HINT: take dot product of gradient and corresponding direction
-            float s = 0;
-            float t = 0;
-            float u = 0;
-            float v = 0;
+            float s = topleft.dot(a);
+			float t = topright.dot(b);
+			float u = bottomleft.dot(c);
+			float v = bottomright.dot(d);
 
             ///TODO: Interpolate along "x" HINT: use fade(dx) as t
-            float st = 0;
-            float uv = 0;
+            float st = lerp(s, t, fade(dx));
+            float uv = lerp(u, v, fade(dx));
 
             ///TODO: Interpolate along "y"
-            float noise = 0;
+            float noise = lerp(st, uv, dy);
 
             perlin_data[i+j*height] = noise;
         }

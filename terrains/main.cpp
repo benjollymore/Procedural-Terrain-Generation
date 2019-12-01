@@ -52,8 +52,8 @@ void genTerrainMesh() {
     /// NOTE: For assignment 3 you cannot use this method to generate the mesh, you'll have to use GL_TRIANGLE_STRIPS
     /// Create a flat (z=0) mesh for the terrain with given dimensions
     terrainMesh = std::unique_ptr<GPUMesh>(new GPUMesh());
-    int n_width = 16; // Grid resolution
-    int n_height = 16;
+    int n_width = 100; // Grid resolution
+    int n_height = 100;
 
     std::vector<Vec3> points;
     std::vector<unsigned int> indices;

@@ -153,8 +153,8 @@ void init(){
 void genTerrainMesh() {
     /// Create a flat (z=0) mesh for the terrain with given dimensions, using triangle strips
     terrainMesh = std::unique_ptr<GPUMesh>(new GPUMesh());
-    int n_width = 256; // Grid resolution
-    int n_height = 256;
+    int n_width = 50; // Grid resolution
+    int n_height = 50;
     float f_width = 5.0f; // Grid width, centered at 0,0
     float f_height = 5.0f;
 
@@ -166,7 +166,7 @@ void genTerrainMesh() {
     for(int j=0; j<n_height; ++j) {
         for(int i=0; i<n_width; ++i) {
             /// TODO: calculate vertex positions, texture indices done for you
-            points.push_back(Vec3(0, 0, 0.0f));
+			points.push_back(Vec3(i / (float)n_width, j / (float)n_height, 0.0f));
             texCoords.push_back( Vec2( i/(float)(n_width-1), j/(float)(n_height-1)) );
         }
     }
@@ -178,8 +178,8 @@ void genTerrainMesh() {
         indices.push_back((j+1)*n_width);
         for(int i=1; i<n_width; ++i) {
             /// TODO: push_back next two vertices HINT: Each one will generate a new triangler
-            indices.push_back(0);
-            indices.push_back(0);
+			indices.push_back(j * n_width + i); 
+			indices.push_back((j + 1) * n_width + i);
         }
         ///--- A new strip will begin when this index is reached
         indices.push_back(resPrim);
@@ -238,11 +238,11 @@ void drawTerrain() {
     terrainShader->set_uniform("M", M);
 
     Vec3 look = cameraFront + cameraPos;
-    Mat4x4 V = Mat4x4::Identity(); /// HERE
-    terrainShader->set_uniform("V", V);
+	Mat4x4 V = lookAt(Vec3(0.5, 0, 0.5), Vec3(0.5, 0.5, 0), Vec3(0, 1, 0));
+	terrainShader->set_uniform("V", V);
 
-    Mat4x4 P = Mat4x4::Identity(); /// AND HERE
-    terrainShader->set_uniform("P", P);
+	Mat4x4 P = perspective(70.0f, width / (float)height, 0.01f, 10.0f);
+	terrainShader->set_uniform("P", P);
 
     terrainShader->set_uniform("viewPos", cameraPos);
 
@@ -261,13 +261,15 @@ void drawTerrain() {
 
     // Draw terrain using triangle strips
     glEnable(GL_DEPTH_TEST);
-    // glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     terrainMesh->set_attributes(*terrainShader);
     terrainMesh->set_mode(GL_TRIANGLE_STRIP);
     glEnable(GL_PRIMITIVE_RESTART);
+	
+
     glPrimitiveRestartIndex(resPrim);
     /// TODO: Uncomment line below once this function is implemented
-    // terrainMesh->draw();
+    terrainMesh->draw();
 
     terrainShader->unbind();
 }

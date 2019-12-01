@@ -26,7 +26,7 @@ int main(int, char**){
     init();
 
     ///--- Get height texture
-    heightTexture = std::unique_ptr<R32FTexture>(perlin2DTexture());
+    heightTexture = std::unique_ptr<R32FTexture>(fBm2DTexture());
 
     // Display callback
     Window& window = app.create_window([&](Window&){
