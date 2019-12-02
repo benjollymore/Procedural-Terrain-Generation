@@ -19,8 +19,8 @@ void main() {
     
     /// Lambertian shading
     vec3 N = normalize(fnormal_cam);
-    //vec3 L = vec3(0,0,-1); ///< fixed light pos
-    vec3 L = normalize(vec3(cos(time), sin(time), -1)); ///< rotating light
+    vec3 L = vec3(0,0,-1); ///< fixed light pos
+    //vec3 L = normalize(vec3(cos(time), sin(time), -1)); ///< rotating light
     float lamb = dot(N,L);
     color = color * max(lamb, 0);
 

@@ -46,7 +46,7 @@ R32FTexture* fBm2DTexture() {
 	float* perlin_data = perlin2D(width, height, 128);
 
 	///--- fBm parameters
-	float H = 0.25f;
+	float H = 0.8f;
 	float lacunarity = 2.0f;
 	float offset = 0.1f;
 	const int octaves = 4;
@@ -77,13 +77,11 @@ R32FTexture* fBm2DTexture() {
 			int J = j;
 			for (int k = 0; k < octaves; ++k) {
 				/// TODO: Get perlin noise at I,J, add offset, multiply by proper term and add to noise
-				if (I + J * height < height*width) {
-					noise_data[i + j * height] += (perlin_data[I + j * height] + offset)* exponent_array[k];
-				}
+					noise_data[i + j * height] += (perlin_data[I%width + J%width * height] + offset)* exponent_array[k];
 
 				///--- Point to sample at next octave
 				I *= (int)lacunarity;
-				//J *= (int)lacunarity;
+				J *= (int)lacunarity;
 			}
 		}
 	}
@@ -97,6 +95,93 @@ R32FTexture* fBm2DTexture() {
 
 	return _tex;
 }
+
+
+R32FTexture* hybridMultifractal2DTexture() {
+
+	///--- Precompute perlin noise on a 2D grid
+	const int width = 512;
+	const int height = 512;
+	float* perlin_data = perlin2D(width, height, 128);
+
+	///--- fBm parameters
+	float H = 0.8f;
+	float lacunarity = 2.0f;
+	float offset = 0.1f;
+	std::vector<float> weight;
+	float signal;
+	const int octaves = 4;
+
+	///--- Initialize to 0s
+	float* noise_data = new float[width * height];
+	for (int i = 0; i < width; ++i) {
+		for (int j = 0; j < height; ++j) {
+			noise_data[i + j * height] = 0;
+		}
+	}
+
+	///--- Precompute exponent array
+	float* exponent_array = new float[octaves];
+	float f = 1.0f;
+	for (int i = 0; i < octaves; ++i) {
+		/// TODO: Implement this step according to Musgraves paper on fBM
+		/* compute weight for each frequency */
+		exponent_array[i] = pow(f, -H);
+		f *= lacunarity;
+	}
+
+
+	//first pass, octave 1
+	for (int i = 0; i < width; ++i) {
+		for (int j = 0; j < height; ++j) {
+			int I = i;
+			int J = j;
+			/// TODO: Get perlin noise at I,J, add offset, multiply by proper term and add to noise
+			noise_data[i + j * height] += (perlin_data[I%width + J % width * height] + offset)* exponent_array[0];
+			weight[i + j * height] = noise_data[i + j * height];
+			///--- Point to sample at next octave
+			I *= (int)lacunarity;
+			J *= (int)lacunarity;
+		}
+
+
+
+
+		for (int i = 0; i < width; ++i) {
+			for (int j = 0; j < height; ++j) {
+				int I = i;
+				int J = j;
+				for (int k = 1; k < octaves; ++k) {
+					/// TODO: Get perlin noise at I,J, add offset, multiply by proper term and add to noise
+					if (weight[i + j * height] > 1.0) {
+						weight[i + j * height] = 1.0;
+					}
+
+					signal = (perlin_data[I%width + J % width * height] + offset)* exponent_array[k];
+					noise_data[i + j * height] += weight[i + j * height] * signal;
+					weight[i + j * height] *= signal;
+
+					///--- Point to sample at next octave
+					I *= (int)lacunarity;
+					J *= (int)lacunarity;
+				}
+			}
+		}
+
+		R32FTexture* _tex = new R32FTexture();
+		_tex->upload_raw(width, height, noise_data);
+
+		delete perlin_data;
+		delete noise_data;
+		delete exponent_array;
+
+		return _tex;
+	}
+}
+
+
+
+
 
 float* perlin2D(const int width, const int height, const int period) {
 

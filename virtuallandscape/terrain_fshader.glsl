@@ -19,6 +19,8 @@ out vec4 color;
 
 void main() {
 
+	float h = clamp((texture2D(noiseTex, uv)).r, 0, 10.0)*.1;
+	
     // Directional light source
     vec3 lightDir = normalize(vec3(1,1,1));
 
@@ -28,34 +30,60 @@ void main() {
     /// TODO: Calculate surface normal N
     /// HINT: Use textureOffset(,,) to read height at uv + pixelwise offset
     /// HINT: Account for texture x,y dimensions in world space coordinates (default f_width=f_height=5)
-    vec3 A = vec3( 0 );
-    vec3 B = vec3( 0 );
-    vec3 C = vec3( 0 );
-    vec3 D = vec3( 0 );
+    vec3 A = vec3(uv.x, uv.y, h);
+    vec3 B = vec3(textureOffset(noiseTex, uv, ivec2(-1,-1)));
+    vec3 C = vec3(uv.x, uv.y, h);
+    vec3 D = vec3(textureOffset(noiseTex, uv, ivec2(1,1)));
     vec3 N = normalize( cross(normalize(A-B), normalize(C-D)) );
 
     /// TODO: Texture according to height and slope
     /// HINT: Read noiseTex for height at uv
-	 float h = clamp((texture2D(noiseTex, uv)).r, 0, 1)*.1;
+
+	if(h <=0){
+		color = texture(water, uv);
+   }
+   if (h > 0 && h < .01){
+   		color = texture(sand, uv);
+   }
+   if (h >=.01 && h < .02){
+		color = (1-clamp((.02 - h), 0.1, 1.0))*texture(sand, uv) + clamp((.02 - h), 0.1, 1.0)* texture(grass, uv);
+   }
+   if (h >= .02 && h < .03){
+   		color = texture(grass, uv);
+   }
+   if(h >= .03 && h < .06){
+		color =  (1-clamp((.04 - h), 0.1, 1.0))*texture(grass, uv) + clamp((.06 - h), 0.1, 1.0)* texture(rock, uv);
+   }
+   if (h >= .06 && h < .09){
+   		color = texture(rock, uv);
+   }
+   if (h>=.09){
+   		color = texture(snow, uv) + texture(grass, uv);
+   }
+   
+   //color = vec4(.5,.5,.5,0);
+
+
 
     /// TODO: Calculate ambient, diffuse, and specular lighting
     /// HINT: max(,) dot(,) reflect(,) normalize()
+	/// Lambertian shading
+	//vec3 N = normalize(lightDir);
+    vec3 L = vec3(-.4,-.4,-1); ///< fixed light pos
+    // vec3 L = normalize(vec3(cos(time), sin(time), -1)); ///< rotating light
+    float lamb = dot(N,L);
+    color = color * max(lamb, 0.5);
 
-   if(h == 0){
-		color = texture(water, uv);
-   }
-   if (h > 0 && h < .015){
-   		color = texture(sand, uv);
-   }
-   if (h >= .015 && h < .03){
-   		color = texture(grass, uv);
-   }
-   if (h >= .03 && h < .04){
-   		color = texture(rock, uv);
-   }
-   if (h>=.04){
-   		color = texture(snow, uv);
-   }
+	if(lamb>0){
+        vec3 V = vec3(0,0,-1); //< we are in camera space
+        vec3 R = reflect(V,N);
+        float glossy = pow( max(dot(-R,L),0), 100);
+        color += vec4(.4)*glossy;
+    }
+
+
+
+   
    
 }
 )"

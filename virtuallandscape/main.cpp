@@ -3,6 +3,8 @@
 
 #include "loadTexture.h"
 #include "noise.h"
+#include <chrono>
+#include <thread>
 
 using namespace OpenGP;
 const int width=1280, height=720;
@@ -45,6 +47,34 @@ Vec3 cameraUp;
 float halflife;
 float yaw;
 float pitch;
+std::vector<Vec2> controlPoints;
+int flightTime = 100;
+float bezierTracker = 0;
+
+Vec2 calcBezierPoint(float lineParam) {
+	//calc lines between control vectors
+	Vec2 l1 = controlPoints[1] - controlPoints[0];
+	Vec2 l2 = controlPoints[2] - controlPoints[1];
+	Vec2 l3 = controlPoints[3] - controlPoints[2];
+
+	//first round of decomp, calc new points
+	Vec2 pt1 = controlPoints[0] + lineParam * l1;
+	Vec2 pt2 = controlPoints[1] + lineParam * l2;
+	Vec2 pt3 = controlPoints[2] + lineParam * l3;
+	//calc new lines. 
+	//save some memory, just overwrite the ones from before
+	l1 = pt2 - pt1;
+	l2 = pt3 - pt2;
+
+	//next round of decomp, calc new points
+	pt1 = pt1 + lineParam * l1;
+	pt2 = pt2 + lineParam * l2;
+	//calc new line
+	l1 = pt2 - pt1;
+
+	//return point on bezier curve
+	return (pt1 + lineParam * l1);
+}
 
 int main(int, char**){
 
@@ -124,10 +154,23 @@ int main(int, char**){
 			//position -= right * deltaTime * speed;
 			cameraPos[2] += 0.005;
 		}
-		// Strafe left
+		// Trans down
 		if (GLFW_KEY_LEFT_CONTROL == k.key) {
 			//position -= right * deltaTime * speed;
 			cameraPos[2] -= 0.005;
+		}
+		// Bezier time oooh yeaaahh
+		if (GLFW_KEY_B == k.key) {
+			//position -aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+			    float param = (float)bezierTracker / float(flightTime);
+				Vec2 pt = calcBezierPoint(param);
+				cameraPos[0] = pt.x();
+				cameraPos[1] = pt.y();
+				std::cout << "x: " << cameraPos[0] << ", y: " << cameraPos[1] << std::endl;
+				bezierTracker++;
+				if (bezierTracker == flightTime) {
+					bezierTracker = 0;
+				}
 		}
     });
 
@@ -136,6 +179,13 @@ int main(int, char**){
 
 void init(){
     glClearColor(.67,.85,.9, /*solid*/1 );
+
+	controlPoints = std::vector<Vec2>();
+	controlPoints.push_back(Vec2(.2f, .2f));
+	controlPoints.push_back(Vec2(.8, .2f));
+	controlPoints.push_back(Vec2(.4f, .8f));
+	controlPoints.push_back(Vec2(.2f, .4f));
+
 
     ///--- Compile shaders
     skyboxShader = std::unique_ptr<Shader>(new Shader());
@@ -151,7 +201,7 @@ void init(){
     terrainShader->link();
 
     ///--- Get height texture
-    heightTexture = std::unique_ptr<R32FTexture>(fBm2DTexture());
+    heightTexture = std::unique_ptr<R32FTexture>(hybridMultifractal2DTexture());
 
     ///--- Load terrain and cubemap textures
     const std::string list[] = {"grass", "rock", "sand", "snow", "water"};
@@ -186,8 +236,8 @@ void genTerrainMesh() {
     terrainMesh = std::unique_ptr<GPUMesh>(new GPUMesh());
     int n_width = 1024; // Grid resolution
     int n_height = 1024;
-    float f_width = 5.0f; // Grid width, centered at 0,0
-    float f_height = 5.0f;
+    float f_width = 15.0f; // Grid width, centered at 0,0
+    float f_height = 15.0f;
 
     std::vector<Vec3> points;
     std::vector<unsigned int> indices;
