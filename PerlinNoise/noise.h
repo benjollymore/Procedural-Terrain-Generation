@@ -22,7 +22,7 @@ inline float rand01() {
 
 float* perlin2D(const int width, const int height, const int period=64);
 
-/*
+
 /// Create a heightmap directly from perlin noise (as opposed to using fBM as in assignment 3)
 R32FTexture* perlin2DTexture() {
 
@@ -35,7 +35,7 @@ R32FTexture* perlin2DTexture() {
     _tex->upload_raw(width, height, perlin_data);
     return _tex;
 }
-*/
+
 /// Generates a heightmap using fractional brownian motion
 /// Generates a heightmap using fractional brownian motion
 R32FTexture* fBm2DTexture() {
@@ -77,11 +77,13 @@ R32FTexture* fBm2DTexture() {
 			int J = j;
 			for (int k = 0; k < octaves; ++k) {
 				/// TODO: Get perlin noise at I,J, add offset, multiply by proper term and add to noise
-				noise_data[i + j * height] += perlin_data[i + j * height] * exponent_array[k];
+				if(I+J*height < height*width){
+					noise_data[i + j * height] += (perlin_data[I + j * height] + offset)* exponent_array[k];
+				}
 
 				///--- Point to sample at next octave
 				I *= (int)lacunarity;
-				J *= (int)lacunarity;
+				//J *= (int)lacunarity;
 			}
 		}
 	}

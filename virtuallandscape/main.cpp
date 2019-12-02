@@ -54,7 +54,7 @@ int main(int, char**){
     genCubeMesh();
     genTerrainMesh();
 
-    cameraPos = Vec3(0,0,3);
+    cameraPos = Vec3(.2,.2,.05);
     cameraFront = Vec3(0,-1,0);
     cameraUp = Vec3(0,0,1);
     yaw = 0.0f;
@@ -96,15 +96,46 @@ int main(int, char**){
     });
 
     window.add_listener<KeyEvent>([&](const KeyEvent &k){
-        ///--- TODO: Implement WASD keys HINT: compare k.key to GLFW_KEY_W
 
+        ///--- TODO: Implement WASD keys HINT: compare k.key to GLFW_KEY_W
+		if (GLFW_KEY_W == k.key) {
+			//position += direction * deltaTime * speed;
+			cameraPos[0] += 0.005;
+		}
+		// Move backward
+		if (GLFW_KEY_S == k.key) {
+			//position -= direction * deltaTime * speed;
+			cameraPos[0] -= 0.005;
+
+		}
+		// Strafe right
+		if (GLFW_KEY_D == k.key) {
+			//position += right * deltaTime * speed;
+			cameraPos[1] -= 0.005;
+
+		}
+		// Strafe left
+		if (GLFW_KEY_A == k.key) {
+			//position -= right * deltaTime * speed;
+			cameraPos[1] += 0.01;
+		}
+		// Translate up
+		if (GLFW_KEY_SPACE == k.key) {
+			//position -= right * deltaTime * speed;
+			cameraPos[2] += 0.005;
+		}
+		// Strafe left
+		if (GLFW_KEY_LEFT_CONTROL == k.key) {
+			//position -= right * deltaTime * speed;
+			cameraPos[2] -= 0.005;
+		}
     });
 
     return app.run();
 }
 
 void init(){
-    glClearColor(1,1,1, /*solid*/1.0 );
+    glClearColor(.67,.85,.9, /*solid*/1 );
 
     ///--- Compile shaders
     skyboxShader = std::unique_ptr<Shader>(new Shader());
@@ -153,8 +184,8 @@ void init(){
 void genTerrainMesh() {
     /// Create a flat (z=0) mesh for the terrain with given dimensions, using triangle strips
     terrainMesh = std::unique_ptr<GPUMesh>(new GPUMesh());
-    int n_width = 50; // Grid resolution
-    int n_height = 50;
+    int n_width = 1024; // Grid resolution
+    int n_height = 1024;
     float f_width = 5.0f; // Grid width, centered at 0,0
     float f_height = 5.0f;
 
@@ -219,14 +250,17 @@ void drawSkybox() {
 
     /// TODO: Bind Textures and set uniform
     /// HINT: Use GL_TEXTURE0, and texture type GL_TEXTURE_CUBE_MAP
-
-
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxTexture);
+	skyboxShader->set_uniform("skybox", 0);
 
     /// TODO: Set atrributes, draw cube using GL_TRIANGLE_STRIP mode
+	
     glEnable(GL_DEPTH_TEST);
-
-
-
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	skyboxMesh->set_attributes(*skyboxShader);
+	skyboxMesh->set_mode(GL_TRIANGLE_STRIP);
+	skyboxMesh->draw();
     skyboxShader->unbind();
 }
 
@@ -238,7 +272,7 @@ void drawTerrain() {
     terrainShader->set_uniform("M", M);
 
     Vec3 look = cameraFront + cameraPos;
-	Mat4x4 V = lookAt(Vec3(0.5, 0, 0.5), Vec3(0.5, 0.5, 0), Vec3(0, 1, 0));
+	Mat4x4 V = lookAt(cameraPos, look, cameraUp);
 	terrainShader->set_uniform("V", V);
 
 	Mat4x4 P = perspective(70.0f, width / (float)height, 0.01f, 10.0f);
@@ -255,13 +289,13 @@ void drawTerrain() {
         ++i;
     }
     /// TODO: Bind height texture to GL_TEXTURE0 and set uniform noiseTex
-
-
-
+	glActiveTexture(GL_TEXTURE0);
+	heightTexture->bind();
+	terrainShader->set_uniform("noiseTex", 0);
 
     // Draw terrain using triangle strips
     glEnable(GL_DEPTH_TEST);
-    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL);
     terrainMesh->set_attributes(*terrainShader);
     terrainMesh->set_mode(GL_TRIANGLE_STRIP);
     glEnable(GL_PRIMITIVE_RESTART);

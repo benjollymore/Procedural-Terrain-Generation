@@ -36,10 +36,26 @@ void main() {
 
     /// TODO: Texture according to height and slope
     /// HINT: Read noiseTex for height at uv
+	 float h = clamp((texture2D(noiseTex, uv)).r, 0, 1)*.1;
 
     /// TODO: Calculate ambient, diffuse, and specular lighting
     /// HINT: max(,) dot(,) reflect(,) normalize()
 
-    color = vec4(0,0,0,1);
+   if(h == 0){
+		color = texture(water, uv);
+   }
+   if (h > 0 && h < .015){
+   		color = texture(sand, uv);
+   }
+   if (h >= .015 && h < .03){
+   		color = texture(grass, uv);
+   }
+   if (h >= .03 && h < .04){
+   		color = texture(rock, uv);
+   }
+   if (h>=.04){
+   		color = texture(snow, uv);
+   }
+   
 }
 )"
