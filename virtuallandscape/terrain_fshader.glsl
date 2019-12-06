@@ -19,7 +19,7 @@ out vec4 color;
 
 void main() {
 
-	float h = clamp((texture2D(noiseTex, uv)).r, 0, 10.0)*.1;
+	float h = clamp((texture2D(noiseTex, uv)).r, 0, 10.0)*.2;
 	
     // Directional light source
     vec3 lightDir = normalize(vec3(1,1,1));
@@ -39,26 +39,27 @@ void main() {
     /// TODO: Texture according to height and slope
     /// HINT: Read noiseTex for height at uv
 
-	if(h <=0){
+	//texture mixing based on height
+   if(h <=0){
 		color = texture(water, uv);
    }
    if (h > 0 && h < .01){
    		color = texture(sand, uv);
    }
    if (h >=.01 && h < .02){
-		color = (1-clamp((.02 - h), 0.1, 1.0))*texture(sand, uv) + clamp((.02 - h), 0.1, 1.0)* texture(grass, uv);
+		color = mix(texture2D(sand, uv), texture2D(grass, uv), texture2D(noiseTex, uv).r);
    }
    if (h >= .02 && h < .03){
    		color = texture(grass, uv);
    }
    if(h >= .03 && h < .06){
-		color =  (1-clamp((.04 - h), 0.1, 1.0))*texture(grass, uv) + clamp((.06 - h), 0.1, 1.0)* texture(rock, uv);
+		color = mix(texture2D(grass, uv), texture2D(rock, uv), texture2D(noiseTex, uv).r);
    }
    if (h >= .06 && h < .09){
    		color = texture(rock, uv);
    }
    if (h>=.09){
-   		color = texture(snow, uv) + texture(grass, uv);
+   		color = mix(texture2D(rock, uv), texture2D(snow, uv), texture2D(noiseTex, uv).r);
    }
    
    //color = vec4(.5,.5,.5,0);
