@@ -201,7 +201,7 @@ void init(){
     terrainShader->link();
 
     ///--- Get height texture
-    heightTexture = std::unique_ptr<R32FTexture>(hybridMultifractal2DTexture());
+    heightTexture = std::unique_ptr<R32FTexture>(fBm2DTexture());
 
     ///--- Load terrain and cubemap textures
     const std::string list[] = {"grass", "rock", "sand", "snow", "water"};

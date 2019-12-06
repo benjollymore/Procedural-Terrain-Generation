@@ -14,7 +14,7 @@ out vec3 fragPos;
 
 void main() {
     /// TODO: Get height h at uv
-    float h = clamp((texture2D(noiseTex, vtexcoord)).r, 0, 10)*.1;
+    float h = clamp((texture2D(noiseTex, vtexcoord)).r, 0, 10)*.2;
 
     uv = vtexcoord;
     fragPos = vposition.xyz + vec3(0,0,h);

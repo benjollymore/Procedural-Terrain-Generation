@@ -19,7 +19,7 @@ out vec4 color;
 
 void main() {
 
-	float h = clamp((texture2D(noiseTex, uv)).r, 0, 10.0)*.1;
+	float h = clamp((texture2D(noiseTex, uv)).r, 0, 10.0)*.2;
 	
     // Directional light source
     vec3 lightDir = normalize(vec3(1,1,1));
