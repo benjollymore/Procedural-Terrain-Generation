@@ -127,6 +127,7 @@ int main(int, char**){
 
     window.add_listener<KeyEvent>([&](const KeyEvent &k){
 
+		float speed = 0.005;
         ///--- TODO: Implement WASD keys HINT: compare k.key to GLFW_KEY_W
 		if (GLFW_KEY_W == k.key) {
 			//position += direction * deltaTime * speed;
