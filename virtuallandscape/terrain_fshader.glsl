@@ -1,5 +1,6 @@
 R"(
 #version 330 core
+uniform float time;
 uniform sampler2D noiseTex;
 
 uniform sampler2D grass;
@@ -48,31 +49,6 @@ void main() {
 
 	//texture mixing based on height
 
-	/*
-	if(h <=0){
-		weightWater = 1.0f;
-	}
-	if (h > 0 && h < .01){
-			color = texture(sand, uv);
-	}
-	if (h > 0  && h < .02){
-		color = mix(texture2D(sand, uv), texture2D(grass, uv), texture2D(noiseTex, uv).r);
-    }
-	if (h >= .02 && h < .03){
-		color = texture(grass, uv);
-	}
-	if(h >= .02 && h < .06){
-		color = mix(texture2D(grass, uv), texture2D(rock, uv), texture2D(noiseTex, uv).r);
-	}
-	if (h >= .06 && h < .09){
-   		color = texture(rock, uv);
-	}
-	if (h>=.09){
-   		color = mix(texture2D(rock, uv), texture2D(snow, uv), texture2D(noiseTex, uv).r);
-	}
-   */
-
-
 	if(h <=0){
 		weightWater = 1.0f;
 	}
@@ -101,19 +77,16 @@ void main() {
 		weightSnow = 1.0f;
 	}
 
-
+	
 	color = texture2D(sand, uv) * weightSand +
 			texture2D(grass, uv) * weightGrass +
 			texture2D(rock, uv) * weightRock +
 			texture2D(water, uv) * weightWater +
 			texture2D(snow, uv) * weightSnow;
 
-    /// TODO: Calculate ambient, diffuse, and specular lighting
-    /// HINT: max(,) dot(,) reflect(,) normalize()
 	/// Lambertian shading
-	//vec3 N = normalize(lightDir);
     vec3 L = vec3(-.4,-.4,-1); ///< fixed light pos
-    // vec3 L = normalize(vec3(cos(time), sin(time), -1)); ///< rotating light
+    //vec3 L = normalize(vec3(cos(10*time), sin(10*time), -1)); ///< rotating light
     float lamb = dot(N,L);
     color = color * max(lamb, 0.5);
 
@@ -129,4 +102,4 @@ void main() {
    
    
 }
-)"
+)"	

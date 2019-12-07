@@ -7,7 +7,7 @@
 #include <thread>
 
 using namespace OpenGP;
-const int width=1280, height=720;
+const int width=1500, height=1000;
 
 const char* skybox_vshader =
 #include "skybox_vshader.glsl"
@@ -48,7 +48,7 @@ float halflife;
 float yaw;
 float pitch;
 std::vector<Vec2> controlPoints;
-int flightTime = 100;
+int flightTime = 250;
 float bezierTracker = 0;
 
 Vec2 calcBezierPoint(float lineParam) {
@@ -127,42 +127,34 @@ int main(int, char**){
 
     window.add_listener<KeyEvent>([&](const KeyEvent &k){
 
-		float speed = 0.005;
         ///--- TODO: Implement WASD keys HINT: compare k.key to GLFW_KEY_W
 		if (GLFW_KEY_W == k.key) {
-			//position += direction * deltaTime * speed;
-			cameraPos[0] += 0.005;
+			cameraPos += 0.005 * cameraFront.normalized();
 		}
 		// Move backward
 		if (GLFW_KEY_S == k.key) {
-			//position -= direction * deltaTime * speed;
-			cameraPos[0] -= 0.005;
+			cameraPos -= 0.005 * cameraFront.normalized();
 
 		}
 		// Strafe right
 		if (GLFW_KEY_D == k.key) {
-			//position += right * deltaTime * speed;
-			cameraPos[1] -= 0.005;
+			cameraPos -= 0.005 * cameraFront.unitOrthogonal();
 
 		}
 		// Strafe left
 		if (GLFW_KEY_A == k.key) {
-			//position -= right * deltaTime * speed;
-			cameraPos[1] += 0.01;
+			cameraPos += 0.005 * cameraFront.unitOrthogonal();
 		}
 		// Translate up
 		if (GLFW_KEY_SPACE == k.key) {
-			//position -= right * deltaTime * speed;
 			cameraPos[2] += 0.005;
 		}
 		// Trans down
 		if (GLFW_KEY_LEFT_CONTROL == k.key) {
-			//position -= right * deltaTime * speed;
 			cameraPos[2] -= 0.005;
 		}
-		// Bezier time oooh yeaaahh
+		// Bezier Path
 		if (GLFW_KEY_B == k.key) {
-			//position -aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 			    float param = (float)bezierTracker / float(flightTime);
 				Vec2 pt = calcBezierPoint(param);
 				cameraPos[0] = pt.x();
@@ -182,10 +174,10 @@ void init(){
     glClearColor(.67,.85,.9, /*solid*/1 );
 
 	controlPoints = std::vector<Vec2>();
-	controlPoints.push_back(Vec2(.2f, .2f));
-	controlPoints.push_back(Vec2(.8, .2f));
-	controlPoints.push_back(Vec2(.4f, .8f));
-	controlPoints.push_back(Vec2(.2f, .4f));
+	controlPoints.push_back(Vec2(.44f, -.15f));
+	controlPoints.push_back(Vec2(2.75, 1.16f));
+	controlPoints.push_back(Vec2(-1.0f, 2.18f));
+	controlPoints.push_back(Vec2(-.02f, -.03f));
 
 
     ///--- Compile shaders

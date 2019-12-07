@@ -100,17 +100,17 @@ R32FTexture* fBm2DTexture() {
 R32FTexture* hybridMultifractal2DTexture() {
 
 	///--- Precompute perlin noise on a 2D grid
-	const int width = 1024;
-	const int height = 1024;
+	const int width = 512;
+	const int height = 512;
 	float* perlin_data = perlin2D(width, height, 128);
 
 	///--- fBm parameters
-	float H = 0.8f;
+	float H = 0.25f;
 	float lacunarity = 2.0f;
 	float offset = 0.1f;
-	std::vector<float> weight;
+	float* weight = new float[width * height];;
 	float signal;
-	const int octaves = 16;
+	const int octaves = 8;
 
 	///--- Initialize to 0s
 	float* noise_data = new float[width * height];
@@ -144,17 +144,14 @@ R32FTexture* hybridMultifractal2DTexture() {
 			J *= (int)lacunarity;
 		}
 
-
-
-
 		for (int i = 0; i < width; ++i) {
 			for (int j = 0; j < height; ++j) {
 				int I = i;
 				int J = j;
 				for (int k = 1; k < octaves; ++k) {
 					/// TODO: Get perlin noise at I,J, add offset, multiply by proper term and add to noise
-					if (weight[i + j * height] > 1.0) {
-						weight[i + j * height] = 1.0;
+					if (weight[i + j * height] > 0.5) {
+						weight[i + j * height] = 0.5;
 					}
 
 					signal = (perlin_data[I%width + J % width * height] + offset)* exponent_array[k];
