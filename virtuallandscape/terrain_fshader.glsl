@@ -7,7 +7,7 @@ uniform sampler2D grass;
 uniform sampler2D rock;
 uniform sampler2D sand;
 uniform sampler2D snow;
-uniform sampler2D water;
+uniform sampler2D water;e
 
 // The camera position
 uniform vec3 viewPos;
